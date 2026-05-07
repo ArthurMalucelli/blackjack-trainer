@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0d1b2a">
+<title>Blackjack Trainer</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="logo">BJ Trainer</div>
+    <nav id="phase-nav">
+      <button data-phase="1" class="active">1. Strategy</button>
+      <button data-phase="2">2. Count</button>
+      <button data-phase="3">3. Game</button>
+      <button data-phase="0">Stats</button>
+    </nav>
+  </header>
+
+  <!-- ============================ PHASE 1: BASIC STRATEGY ============================ -->
+  <section id="phase1" class="phase active">
+    <div class="rules-bar">
+      <label><input type="checkbox" id="rule-h17" checked> H17</label>
+      <label><input type="checkbox" id="rule-das" checked> DAS</label>
+      <label><input type="checkbox" id="rule-surr" checked> Surrender</label>
+      <button id="reset-stats" class="ghost-btn">Reset stats</button>
+    </div>
+
+    <div class="table-felt">
+      <div class="dealer-row">
+        <div class="label">Dealer</div>
+        <div class="cards" id="dealer-cards"></div>
+      </div>
+
+      <div class="player-row">
+        <div class="cards" id="player-cards"></div>
+        <div class="label">You</div>
+      </div>
+    </div>
+
+    <div id="feedback" class="feedback hidden">
+      <div class="verdict"></div>
+      <div class="explanation"></div>
+      <button id="next-hand" class="primary-btn">Next hand →</button>
+    </div>
+
+    <div id="actions" class="actions">
+      <button data-action="H" class="action-btn">Hit</button>
+      <button data-action="S" class="action-btn">Stand</button>
+      <button data-action="D" class="action-btn">Double</button>
+      <button data-action="P" class="action-btn">Split</button>
+      <button data-action="R" class="action-btn">Surrender</button>
+    </div>
+
+    <div class="stats-bar">
+      <div class="stat"><span id="p1-correct">0</span> / <span id="p1-total">0</span> <small>(<span id="p1-pct">0</span>%)</small></div>
+      <div class="stat">Streak: <span id="p1-streak">0</span></div>
+    </div>
+  </section>
+
+  <!-- ============================ PHASE 2: COUNTING DRILLS ============================ -->
+  <section id="phase2" class="phase">
+    <div class="drill-tabs">
+      <button data-drill="deckdown" class="active">Deck-down</button>
+      <button data-drill="tcconv">TC conversion</button>
+      <button data-drill="pairs">Pair cancellation</button>
+    </div>
+
+    <!-- Deck-down -->
+    <div id="drill-deckdown" class="drill active">
+      <div class="drill-config">
+        <label>Speed: <select id="dd-speed">
+          <option value="1500">Slow (1.5s)</option>
+          <option value="1000">Normal (1.0s)</option>
+          <option value="700" selected>Fast (0.7s)</option>
+          <option value="500">Pro (0.5s)</option>
+          <option value="350">Elite (0.35s)</option>
+        </select></label>
+        <label>System: <select id="dd-system">
+          <option value="hilo" selected>Hi-Lo</option>
+          <option value="ko">KO</option>
+        </select></label>
+      </div>
+      <div class="drill-display" id="dd-display">
+        <div class="big-card" id="dd-card">—</div>
+        <div class="dd-progress"><span id="dd-cards-shown">0</span> / 52 cards</div>
+      </div>
+      <div class="drill-input" id="dd-input-area">
+        <button id="dd-start" class="primary-btn">Start drill</button>
+        <div id="dd-final-prompt" class="hidden">
+          <div class="prompt">Final running count?</div>
+          <input type="number" id="dd-answer" inputmode="numeric" pattern="-?[0-9]*">
+          <button id="dd-submit" class="primary-btn">Submit</button>
+        </div>
+        <div id="dd-result" class="hidden"></div>
+      </div>
+      <div class="stats-bar">
+        <div class="stat">Best time: <span id="dd-best">—</span></div>
+        <div class="stat">Acc: <span id="dd-correct">0</span>/<span id="dd-total">0</span></div>
+      </div>
+    </div>
+
+    <!-- TC conversion -->
+    <div id="drill-tcconv" class="drill">
+      <div class="drill-display tc-display">
+        <div class="tc-prompt">
+          <div class="big-num">RC: <span id="tc-rc">—</span></div>
+          <div class="big-num">Decks: <span id="tc-decks">—</span></div>
+        </div>
+      </div>
+      <div class="drill-input">
+        <button id="tc-start" class="primary-btn">Start</button>
+        <div id="tc-input-prompt" class="hidden">
+          <div class="prompt">True count? (round toward zero)</div>
+          <input type="number" id="tc-answer" inputmode="numeric" pattern="-?[0-9]*">
+          <button id="tc-submit" class="primary-btn">Submit</button>
+        </div>
+        <div id="tc-result" class="hidden"></div>
+      </div>
+      <div class="stats-bar">
+        <div class="stat">Acc: <span id="tc-correct">0</span>/<span id="tc-total">0</span></div>
+        <div class="stat">Avg time: <span id="tc-avg-time">—</span>s</div>
+      </div>
+    </div>
+
+    <!-- Pair cancellation -->
+    <div id="drill-pairs" class="drill">
+      <div class="drill-display">
+        <div class="pair-cards">
+          <div class="big-card small" id="pc-card1">—</div>
+          <div class="big-card small" id="pc-card2">—</div>
+        </div>
+      </div>
+      <div class="drill-input">
+        <button id="pc-start" class="primary-btn">Start</button>
+        <div id="pc-input-prompt" class="hidden">
+          <div class="prompt">Net Hi-Lo value?</div>
+          <div class="quick-buttons">
+            <button data-val="-2">−2</button>
+            <button data-val="-1">−1</button>
+            <button data-val="0">0</button>
+            <button data-val="1">+1</button>
+            <button data-val="2">+2</button>
+          </div>
+        </div>
+        <div id="pc-result" class="hidden"></div>
+      </div>
+      <div class="stats-bar">
+        <div class="stat">Acc: <span id="pc-correct">0</span>/<span id="pc-total">0</span></div>
+        <div class="stat">Streak: <span id="pc-streak">0</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ PHASE 3: FULL GAME ============================ -->
+  <section id="phase3" class="phase">
+    <div class="game-header">
+      <div class="count-display">
+        <div>RC: <span id="g-rc">0</span></div>
+        <div>Decks left: <span id="g-decks">6.0</span></div>
+        <div>TC: <span id="g-tc">0</span></div>
+      </div>
+      <div class="bet-display">
+        <div>Bankroll: <span id="g-bankroll">$2000</span></div>
+        <div>Last bet: <span id="g-lastbet">$0</span></div>
+      </div>
+    </div>
+
+    <div class="table-felt game-felt">
+      <div class="dealer-row">
+        <div class="label">Dealer</div>
+        <div class="cards" id="g-dealer"></div>
+      </div>
+      <div class="other-cards" id="g-other"></div>
+      <div class="player-row">
+        <div class="cards" id="g-player"></div>
+        <div class="label">You</div>
+      </div>
+    </div>
+
+    <div id="g-bet-area">
+      <div class="prompt">Place bet (suggested at TC <span id="g-suggest-tc">0</span>: $<span id="g-suggest-bet">10</span>)</div>
+      <div class="bet-buttons">
+        <button data-bet="10">$10</button>
+        <button data-bet="20">$20</button>
+        <button data-bet="40">$40</button>
+        <button data-bet="60">$60</button>
+        <button data-bet="80">$80</button>
+        <button data-bet="120">$120</button>
+      </div>
+      <button id="g-deal" class="primary-btn" disabled>Deal</button>
+    </div>
+
+    <div id="g-actions" class="actions hidden">
+      <button data-action="H" class="action-btn">Hit</button>
+      <button data-action="S" class="action-btn">Stand</button>
+      <button data-action="D" class="action-btn">Double</button>
+      <button data-action="P" class="action-btn">Split</button>
+      <button data-action="R" class="action-btn">Surrender</button>
+    </div>
+
+    <div id="g-feedback" class="feedback hidden"></div>
+
+    <div class="stats-bar">
+      <div class="stat">Hands: <span id="g-hands">0</span></div>
+      <div class="stat">Play acc: <span id="g-play-acc">100</span>%</div>
+      <div class="stat">Bet acc: <span id="g-bet-acc">100</span>%</div>
+    </div>
+  </section>
+
+  <!-- ============================ STATS PAGE ============================ -->
+  <section id="phase0" class="phase">
+    <h2>Your progress</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Phase 1 — Basic Strategy</div>
+        <div class="stat-value" id="s-p1-acc">—</div>
+        <div class="stat-detail" id="s-p1-detail">No sessions yet</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Deck-down speed</div>
+        <div class="stat-value" id="s-dd-time">—</div>
+        <div class="stat-detail" id="s-dd-detail">No sessions yet</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">TC conversion</div>
+        <div class="stat-value" id="s-tc-acc">—</div>
+        <div class="stat-detail" id="s-tc-detail">No sessions yet</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Phase 3 — Full game</div>
+        <div class="stat-value" id="s-g-acc">—</div>
+        <div class="stat-detail" id="s-g-detail">No sessions yet</div>
+      </div>
+    </div>
+    <h3>Worst basic-strategy cells</h3>
+    <div id="s-worst-cells" class="worst-cells">No data yet. Drill some hands.</div>
+    <h3>Reset</h3>
+    <button id="reset-all" class="ghost-btn danger">Reset all stats</button>
+  </section>
+
+</div>
+<script src="app.js"></script>
+</body>
+</html>
