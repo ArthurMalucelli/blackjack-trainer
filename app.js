@@ -85,10 +85,12 @@ function renderCard(card, opts = {}) {
   }
   return div;
 }
-function renderHand(cards, container, hideFirst = false) {
+function renderHand(cards, container, hideHole = false) {
+  // For dealer hands, the hole card (index 1) is hidden until reveal.
+  // Player hands pass hideHole=false and never have hidden cards.
   container.innerHTML = '';
   cards.forEach((c, i) => {
-    container.appendChild(renderCard(c, { facedown: hideFirst && i === 0 }));
+    container.appendChild(renderCard(c, { facedown: hideHole && i === 1 }));
   });
 }
 
@@ -283,7 +285,7 @@ function p1GenerateHand() {
     } while (cardValue(p1c) === cardValue(p2c) || p1c === 'A' || p2c === 'A' || total < 5 || total > 19);
     player = [{ rank: p1c, suit: SUITS[0] }, { rank: p2c, suit: SUITS[1] }];
   }
-  dealer = [{ rank: randomRank(), suit: SUITS[0] }, { rank: '?', suit: '?' }];
+  dealer = [{ rank: randomRank(), suit: SUITS[0] }, { rank: randomRank(), suit: SUITS[1] }];
   return { player, dealer };
 }
 
