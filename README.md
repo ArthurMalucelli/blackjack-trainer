@@ -2,7 +2,7 @@
 
 A three-phase blackjack training app. Single-page, no backend, works offline after first load. Built for self-paced practice from beginner through advantage play.
 
-**Live:** https://juureeg.github.io/blackjack-trainer/
+**Live:** https://arthurmalucelli.github.io/blackjack-trainer/
 
 ## Three phases
 
